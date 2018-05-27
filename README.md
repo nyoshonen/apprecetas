@@ -11,10 +11,10 @@
 <hr>
 <p>He elegido Slim Framework 3 por su facilidad para la creación de API Rest y este tipo de ejercicios.</p>
 <p>Además he creado tests automáticos (con PHPUnit) y el Frontend (app) para probar cada uno de los métodos de inserción, modificación, eliminación y en el caso de los platos, la opción de clonar, es decir, hace una réplica del plato con sus ingredientes y acto seguido se puede modificar su nombre e ingredientes (añade al final del nombre del plato " (copia)".</p>
-<h2>Configuración en Windows:</h2>
+<h2>Configuración en Windows</h2>
 <p>C:\Windows\System32\drivers\etc\hosts</p>
 <p><strong>127.0.0.1	apprecetas</strong></p>
-<h2>Configuración en XAMPP:</h2>
+<h2>Configuración en XAMPP</h2>
 <p>C:\xampp\apache\conf\extra\httpd-vhosts.conf</p>
 <pre>
 &lt;VirtualHost *:80&gt;
@@ -22,11 +22,11 @@
   ServerName apprecetas
 &lt;/VirtualHost&gt;
 </pre>
-<h2>URL de la APP:</h2>
-<p>http://apprecetas/app</p>
-<h2>Datos de Conexión a la Base de Datos:</h2>
+<h2>Datos de Conexión a la Base de Datos</h2>
 <p>/app/settings.php</p>
-<h2>Estructura de las Tablas de la Base de Datos:</h2>
+<h2>Estructura de las Tablas de la Base de Datos</h2>
 <p>/sql/db_recetas.sql</p>
 <h2>TESTS</h2>
 <p>phpunit tests/ApiTest.php</p>
+<h2>APP</h2>
+<p>http://apprecetas/app</p>
