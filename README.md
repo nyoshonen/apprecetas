@@ -9,8 +9,8 @@
 <p>(No será necesario un sistema de usuarios ni roles)</p>
 <p>Bonus: Supongamos que un cocinero puede realizar cambios sobre los ingredientes de un plato. Diseña y, si puedes, implementa un sistema para que quede un registro de cambios sobre los platos.</p>
 <hr>
-<p>He elegido Slim Framework 3 por su facilidad para la creación de API Rest y este tipo de ejercicios.</p>
-<p>Además he creado tests automáticos (con PHPUnit) y el Frontend (app) para probar cada uno de los métodos de inserción, modificación, eliminación y en el caso de los platos, la opción de clonar, es decir, hace una réplica del plato con sus ingredientes y acto seguido se puede modificar su nombre e ingredientes (añade al final del nombre del plato " (copia)".</p>
+<p>He elegido Slim Framework 3 (pese no haberlo utilizado nunca anteriormente) por sus características, ya que permite realizar API Rest de forma rápida, tests automáticos y su curva de aprendizaje es rápida.</p>
+<p>He creado tests automáticos (con PHPUnit) y el Frontend (APP) para probar cada uno de los métodos de inserción, modificación, eliminación y en el caso de los platos, la opción de clonar (BONUS), es decir, hacer una réplica del plato con sus ingredientes y acto seguido se puede modificar su nombre e ingredientes (añade al final del nombre del plato " (copia)".</p>
 <h2>Configuración en Windows</h2>
 <p>C:\Windows\System32\drivers\etc\hosts</p>
 <p><strong>127.0.0.1	apprecetas</strong></p>
