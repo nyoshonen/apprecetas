@@ -1,5 +1,5 @@
 # apprecetas
-<h1>APP - API Rest</h1>
+<h1>PHP: API Rest - APP</h1>
 <p>Debido a una nueva legislación, los restaurantes necesitan tener información disponible acerca de los alérgenos que tiene cada plato que sirven.<br>Un plato tiene varios ingredientes, y un ingrediente puede tener varios alérgenos.</p>
 <p>Un restaurante ha contratado una aplicación movil que gestione para sus camareros cualquier duda de los clientes acerca de esta materia.<br>La implementación de dicha app nos es transparente, salvo porque hace uso de una API Rest que le servirá la información que necesita.</p>
 <p>Implementa un pequeño sistema que se componga de:</p>
