@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+	<head>
+		<meta charset="utf-8">
+		<title>Ingredientes | Cliente API Rest</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" />
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+		<script>
+			JSON.parse = JSON.parse || function(str){
+				if (str=='') {
+					str = '""';
+				}
+				eval("var p=" + str + ";")
+				return p;
+			};
+			$(document).ready(function(){
+				function newIngrediente() {
+					$(".table").html("<tr><td>NOMBRE</td><td>EDITAR</td><td>ELIMINAR</td></tr>");
+					getIngredientes();
+					getAlergenos(0);
+					$("#form")[0].reset();
+					$("#form").attr("data-id",0);
+					$("#form_titulo").html("Nuevo Ingrediente");
+					$("html, body").animate({ scrollTop: 0 }, "slow");
+				}
+				function getAlergenos(id) {
+					$('#capa_alergenos').html("");
+					if (id == "0") {
+						$.ajax({
+							url: "/api/alergenos",
+							type: "get",
+							success: function(response_alergenos) {
+								$.each(JSON.parse(response_alergenos), function(i, index) {
+									$('#capa_alergenos').append("<div class='col-lg-6'>" + 
+															    "	<input type='checkbox' name='alergenos[]' value='" + index.id + "' />" + 
+															    "	" + index.nombre + 
+															    "</div>");
+								});
+							}
+						});
+					}
+					else {
+						var checked = "";
+						var array_alergenos = [];
+						$.ajax({
+							url: "/api/ingredientes_alergenos/"+id,
+							type: "get",
+							success: function(response_ia) {
+								$.each(JSON.parse(response_ia), function(i, index) {
+									array_alergenos.push(index.id_alergeno);
+								});
+								$.ajax({
+									url: "/api/alergenos",
+									type: "get",
+									success: function(response_alergenos) {
+										$.each(JSON.parse(response_alergenos), function(i, index) {
+											checked = "";
+											if ($.inArray(index.id,array_alergenos) != -1) {
+												checked = " checked='checked' ";
+											}
+											$('#capa_alergenos').append("<div class='col-lg-6'>" + 
+																	    "	<input " + checked + " type='checkbox' name='alergenos[]' value='" + index.id + "' />" + 
+																	    "	" + index.nombre + 
+																	    "</div>");
+										});
+									}
+								});
+							}
+						});
+					}
+				}			
+				function getIngredientes(){
+					$.ajax({
+						url: "/api/ingredientes",
+						type: "get",
+						success: function(response) {
+							$.each(JSON.parse(response), function(i, index) {
+								if (index.id.length) {
+									$(".table").append("<tr>" + 
+									                   "	<td>" + index.nombre + "</td>" + 
+													   "	<td><span class='update btn btn-warning' data-id='" + index.id + "'>Editar</span></td>" + 
+													   "	<td><span class='delete btn btn-danger' data-id='" + index.id + "'>Borrar</span></td>" + 
+									                   "</tr>");
+								}
+							});
+							
+							// EDITAR
+							$(".update").unbind("click").click(function(){
+								var id = $(this).data("id");
+								var checked = "";
+								var array_alergenos = [];
+								$.ajax({
+									url: "/api/ingredientes/"+id,
+									type: "get",
+									success: function(response_plato) {
+										var dato = JSON.parse(response_plato)[0];
+										var nombre = dato['nombre'];
+										$("#nombre_form").val(nombre);
+										$("#form").attr("data-id",id);
+										$("#form_titulo").html("Editar Ingrediente");
+										getAlergenos(id);
+										$("html, body").animate({ scrollTop: 0 }, "slow");
+									}
+								});
+							});
+							
+							// BORRAR
+							$(".delete").unbind("click").click(function(){
+								var id = $(this).data("id");		
+								$.ajax({
+									url: "/api/ingredientes_alergenos/"+id,
+									type: "delete",
+									success: function(response) {
+										$.ajax({
+											url: "/api/ingredientes/"+id,
+											type: "delete",
+											success: function(response) {
+												newIngrediente();
+											}
+										});
+									}
+								});
+							});
+						}
+					});
+					$("html, body").animate({ scrollTop: 0 }, "slow");
+				}
+				getIngredientes();
+				getAlergenos(0);
+				
+				// Guardar
+				$('#boton_guardar').click(function(e){
+					var id = $("#form").attr('data-id');
+					if (id == "0") {
+						$.ajax({
+							url: "/api/ingredientes",
+							type: "post",
+							data: {
+								nombre: $("#nombre_form").val()
+							},
+							success: function(response) {
+								$("input[name='alergenos[]']:checked").each(function() {
+									$.ajax({
+										url: "/api/ingredientes_alergenos",
+										type: "post",
+										data: {
+											id_ingrediente: JSON.parse(response)[0], 
+											id_alergeno: $(this).val()
+										}
+									});
+								});
+								newIngrediente();
+							}
+						});
+					}
+					else {
+						$.ajax({
+							url: "/api/ingredientes/"+id,
+							type: "put",
+							data: {
+								nombre: $("#nombre_form").val()
+							},
+							success: function(response) {
+								$.ajax({
+									url: "/api/ingredientes_alergenos/"+id,
+									type: "delete",
+									success: function(response) {
+										$("input[name='alergenos[]']:checked").each(function() {
+											$.ajax({
+												url: "/api/ingredientes_alergenos",
+												type: "post",
+												data: {
+													id_ingrediente: id, 
+													id_alergeno: $(this).val()
+												}
+											});
+										});
+										newIngrediente();
+									}
+								});
+							}
+						});
+					}
+				});
+			});
+		</script>
+	</head>
+	<body>
+		
+		<div class="container">
+			<h1>Cliente API Rest</h1>
+			<div class="row">
+				<div class="col-lg-12">
+					<a class="btn btn-primary" href="/app">Índice</a>
+					<a class="btn btn-info" href="/app/alergenos">Alérgenos</a>
+					<a class="btn btn-info active" href="/app/ingredientes">Ingredientes</a>
+					<a class="btn btn-info" href="/app/platos">Platos</a>
+					<a class="btn btn-info" href="/app/ingredientes">+ Nuevo Ingrediente</a>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-6">
+					<h2>Ingredientes</h2>
+					<table class="table"><tr><td>NOMBRE</td><td>EDITAR</td><td>ELIMINAR</td></tr></table>
+				</div>
+				<div class="col-lg-6 pull-right">
+					<form id="form" data-id="0">
+						<h2 id="form_titulo">Nuevo Ingrediente</h2>
+						Nombre: 
+						<input type="text" id="nombre_form" name="nombre" class="form-control" /><br/>
+						<div class="row" id="capa_alergenos"></div>
+						<br/>
+						<input id="boton_guardar" class="btn btn-success" type="button" value="Guardar" />
+					</form>
+				</div>
+			</div>
+		</div>
+		
+	</body>
+</html>

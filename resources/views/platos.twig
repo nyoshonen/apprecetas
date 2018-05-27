@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+	<head>
+		<meta charset="utf-8">
+		<title>Platos | Cliente API Rest</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" />
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+		<script>
+			JSON.parse = JSON.parse || function(str){
+				if (str=='') {
+					str = '""';
+				}
+				eval("var p=" + str + ";")
+				return p;
+			};
+			$(document).ready(function(){
+				function newPlato() {
+					$(".table").html("<tr><td>NOMBRE</td><td>EDITAR</td><td>CLONAR</td><td>ELIMINAR</td></tr>");
+					getPlatos();
+					getIngredientes(0);
+					$("#form")[0].reset();
+					$("#form").attr("data-id",0);
+					$("#form_titulo").html("Nuevo Plato");
+					$("html, body").animate({ scrollTop: 0 }, "slow");
+				}
+				function getIngredientes(id) {
+					$('#capa_ingredientes').html("");
+					if (id == "0") {
+						$.ajax({
+							url: "/api/ingredientes",
+							type: "get",
+							success: function(response_ingredientes) {
+								$.each(JSON.parse(response_ingredientes), function(i, index) {
+									$('#capa_ingredientes').append("<div class='col-lg-6'>" + 
+																   "	<input type='checkbox' name='ingredientes[]' value='" + index.id + "' />" + 
+																   "	" + index.nombre + 
+																   "</div>");
+								});
+							}
+						});
+					}
+					else {
+						var checked = "";
+						var array_ingredientes = [];
+						$.ajax({
+							url: "/api/platos_ingredientes/"+id,
+							type: "get",
+							success: function(response_pi) {
+								$.each(JSON.parse(response_pi), function(i, index) {
+									array_ingredientes.push(index.id_ingrediente);
+								});
+								$.ajax({
+									url: "/api/ingredientes",
+									type: "get",
+									success: function(response_ingredientes) {
+										$.each(JSON.parse(response_ingredientes), function(i, index) {
+											checked = "";
+											if ($.inArray(index.id,array_ingredientes) != -1) {
+												checked = " checked='checked' ";
+											}
+											$('#capa_ingredientes').append("<div class='col-lg-6'>" + 
+																		   "	<input " + checked + " type='checkbox' name='ingredientes[]' value='" + index.id + "' />" + 
+																		   "	" + index.nombre + 
+																		   "</div>");
+										});
+									}
+								});
+							}
+						});
+					}
+				}
+				function getPlatos(){
+					$.ajax({
+						url: "/api/platos",
+						type: "get",
+						success: function(response) {
+							$.each(JSON.parse(response), function(i, index) {
+								if (index.id.length) {
+									$(".table").append("<tr>" + 
+									                   "	<td>" + index.nombre + "</td>" + 
+													   "	<td><span class='update btn btn-warning' data-id='" + index.id + "'>Editar</span></td>" + 
+													   "	<td><span class='clonar btn btn-warning' data-id='" + index.id + "'>Clonar</span></td>" + 
+													   "	<td><span class='delete btn btn-danger' data-id='" + index.id + "'>Borrar</span></td>" + 
+									                   "</tr>");
+								}
+							});
+							
+							// EDITAR
+							$(".update").unbind("click").click(function(){
+								var id = $(this).data("id");
+								$.ajax({
+									url: "/api/platos/"+id,
+									type: "get",
+									success: function(response_plato) {
+										var dato = JSON.parse(response_plato)[0];
+										var nombre = dato['nombre'];
+										$("#nombre_form").val(nombre);
+										$("#form").attr("data-id",id);
+										$("#form_titulo").html("Editar Plato");
+										getIngredientes(id);
+										$("html, body").animate({ scrollTop: 0 }, "slow");
+									}
+								});
+							});
+							
+							$(".clonar").unbind("click").click(function(){
+								var id = $(this).data("id");		
+								$.ajax({
+									url: "/api/platos/"+id+"/clonar",
+									type: "get",
+									success: function(response) {
+										newPlato();
+									}
+								});
+							});
+							
+							$(".delete").unbind("click").click(function(){
+								var id = $(this).data("id");		
+								$.ajax({
+									url: "/api/platos_ingredientes/"+id,
+									type: "delete",
+									success: function(response) {
+										$.ajax({
+											url: "/api/platos/"+id,
+											type: "delete",
+											success: function(response) {
+												newPlato();
+											}
+										});
+									}
+								});
+							});
+						}
+					});
+					$("html, body").animate({ scrollTop: 0 }, "slow");
+				}
+				getPlatos();
+				getIngredientes(0);
+				
+				// Guardar
+				$('#boton_guardar').click(function(e){
+					var id = $("#form").attr('data-id');
+					if (id == "0") {
+						$.ajax({
+							url: "/api/platos",
+							type: "post",
+							data: {
+								nombre: $("#nombre_form").val()
+							},
+							success: function(response) {
+								$("input[name='ingredientes[]']:checked").each(function() {
+									$.ajax({
+										url: "/api/platos_ingredientes",
+										type: "post",
+										data: {
+											id_plato: JSON.parse(response)[0], 
+											id_ingrediente: $(this).val()
+										}
+									});
+								});
+								newPlato();
+							}
+						});
+					}
+					else {
+						$.ajax({
+							url: "/api/platos/"+id,
+							type: "put",
+							data: {
+								nombre: $("#nombre_form").val()
+							},
+							success: function(response) {
+								$.ajax({
+									url: "/api/platos_ingredientes/"+id,
+									type: "delete",
+									success: function(response) {
+										$("input[name='ingredientes[]']:checked").each(function() {
+											$.ajax({
+												url: "/api/platos_ingredientes",
+												type: "post",
+												data: {
+													id_plato: id, 
+													id_ingrediente: $(this).val()
+												}
+											});
+										});
+										newPlato();
+									}
+								});
+							}
+						});
+					}
+				});
+			});
+		</script>
+	</head>
+	<body>
+		
+		<div class="container">
+			<h1>Cliente API Rest</h1>
+			<div class="row">
+				<div class="col-lg-12">
+					<a class="btn btn-primary" href="/app">Índice</a>
+					<a class="btn btn-info" href="/app/alergenos">Alérgenos</a>
+					<a class="btn btn-info" href="/app/ingredientes">Ingredientes</a>
+					<a class="btn btn-info active" href="/app/platos">Platos</a>
+					<a class="btn btn-info" href="/app/platos">+ Nuevo Plato</a>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-6">
+					<h2>Platos</h2>
+					<table class="table"><tr><td>NOMBRE</td><td>EDITAR</td><td>CLONAR</td><td>ELIMINAR</td></tr></table>
+				</div>
+				<div class="col-lg-6 pull-right">
+					<form id="form" data-id="0">
+						<h2 id="form_titulo">Nuevo Plato</h2>
+						Nombre: 
+						<input type="text" id="nombre_form" name="nombre" class="form-control" /><br/>
+						<div class="row" id="capa_ingredientes"></div>
+						<br/>
+						<input id="boton_guardar" class="btn btn-success" type="button" value="Guardar" />
+					</form>
+				</div>
+			</div>
+		</div>
+		
+	</body>
+</html>
