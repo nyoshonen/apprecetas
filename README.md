@@ -24,3 +24,9 @@
 </pre>
 <h2>URL de la APP:</h2>
 <p>http://apprecetas/app</p>
+<h2>Datos de Conexión a la Base de Datos:</h2>
+<p>/app/settings.php</p>
+<h2>Estructura de las Tablas de la Base de Datos:</h2>
+<p>/sql/db_recetas.sql</p>
+<h2>TESTS</h2>
+<p>phpunit tests/ApiTest.php</p>
